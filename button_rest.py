@@ -1,27 +1,51 @@
+from __future__ import nested_scopes
 from flask import Flask, request, make_response
 from flask_cors import cross_origin
 
 import os.path
 import datetime
+import urllib 
 
 from pymongo import MongoClient
 
 # APP configurations
 app= Flask(__name__)
 
-# Mongodb configurations
-MGDB_HOST = 'mongodb'
-MGDB_PORT = 27017
-MGDB_DATABASE = 'appdb'
+
+ALTAS_USERNAME = urllib.parse.quote_plus("kaili")
+ALTAS_PASSWORD = urllib.parse.quote_plus("P@ssw0rd")
+ALTAS_HOST = 'cluster0.geaah.mongodb.net'
+ALTAS_DATABASE = 'pcs'
+ALTAS_COLLECTION = 'test'
+
+NCHC_USERNAME = urllib.parse.quote_plus("08050cc6-73fb-4d20-b60a-484c3241a812")
+NCHC_PASSWORD = urllib.parse.quote_plus("JE0fQbzONJAAwdCxmM9BIabK")
+NCHC_HOST = '203.145.215.67'
+NCHC_PORT = '27017'
+NCHC_DATABASE = 'JE0fQbzONJAAwdCxmM9BIabK'
+NCHC_COLLECTION = 'JE0fQbzONJAAwdCxmM9BIabK'
 
 
-def get_mgdb_connection ():
+def get_altas_mgdb_connection ():
 
-    client = MongoClient('mongodb://mongodb:27017/')
-    mgdb_database = client["fr_database"]
-    mgdb_collection = mgdb_database["fr_collection"]
+    client = MongoClient("mongodb+srv://"+ALTAS_USERNAME+":"+ALTAS_PASSWORD+"@cluster0.geaah.mongodb.net/")
+    mgdb_database = client[ALTAS_DATABASE]
+    mgdb_collection = mgdb_database[ALTAS_COLLECTION]
 
     return client, mgdb_collection
+
+def get_nchc_mgdb_collection():
+    client = MongoClient('mongodb://mongodb:27017/')
+    mgdb_database = client[NCHC_DATABASE]
+    mgdb_collection = mgdb_database[NCHC_COLLECTION]
+
+    return client, mgdb_collection
+
+
+# TODO count col
+def get_pcs ():
+    n_pcs = 0
+    return n_pcs
 
 @app.route('/start', methods=['POST'])
 @cross_origin()
@@ -60,7 +84,20 @@ def stop():
 
     print('diff = ', diff_second, ' seconds')
 
+    # insert to database
+    insert_dict = dict()
+    insert_dict['machine'] = filename
+    insert_dict['start'] = str(start_time)
+    insert_dict['end'] = str(start_time)
+    insert_dict['diff'] = str(diff_second)
+    insert_dict['pcs'] = str(get_pcs())
+    print(insert_dict)
 
+    client, mgdb_collection = get_altas_mgdb_connection ()
+    mgdb_collection.insert(insert_dict)
+    client.close()
+
+    # remove status and response to client
     os.remove(filename)
 
     response_dict = dict()
