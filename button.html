@@ -1,8 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script>
+
+      $( document ).ready(function() {
+        var requestURL = "http://127.0.0.1:5001/";
+        var dataJSON = {};
+        dataJSON["equipment"] = "machine01";
+
+        $.ajax({
+            url: requestURL + "get_status",
+            data: JSON.stringify(dataJSON),
+            type: "POST",
+            crossDomain: true,
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function(returnData){
+              console.log(returnData.results);
+
+
+              if (returnData.results) {
+                $("#stopid").show();
+                $("#startid").hide();
+              } else {
+                $("#startid").show();
+                $("#stopid").hide();
+              }
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+              console.log('failed');
+              console.log(xhr.status);
+              console.log(thrownError);
+            }
+        });
+
+
+        $("#stopid").click(function(){
+          $("#startid").show();
+          $("#stopid").hide();
+
+          $.ajax({
+            url: requestURL + "stop",
+            data: JSON.stringify(dataJSON),
+            type: "POST",
+            crossDomain: true,
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function(returnData){
+              console.log(returnData.results);
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+              console.log('failed');
+              console.log(xhr.status);
+              console.log(thrownError);
+            }
+          });
+        });
+
+
+        $("#startid").click(function(){
+          $("#stopid").show();
+          $("#startid").hide();
+
+          $.ajax({
+            url: requestURL + "start",
+            data: JSON.stringify(dataJSON),
+            type: "POST",
+            crossDomain: true,
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function(returnData){
+              console.log(returnData.results);
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+              console.log('failed');
+              console.log(xhr.status);
+              console.log(thrownError);
+            }
+          });
+
+        });
+
+
+      });
+  
+    </script>
+
 <style>
-.button {
+.startButton {
   background-color: #4CAF50;
   border: none;
   color: white;
@@ -16,7 +103,26 @@
 }
 
 
-.button:active { 
+.startButton:active { 
+  background-color: SteelBlue; 
+  color: White; 
+}
+
+.stopButton {
+  background-color: #af4c7c;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+
+.stopButton:active { 
   background-color: SteelBlue; 
   color: White; 
 }
@@ -26,9 +132,11 @@
 <body>
 
 
-<a href="#" class="button">Link Button</a>
-<button class="button">Button</button>
-<input type="button" class="button" value="Input Button">
+<!-- <a href="#" class="button">Link Button</a> -->
+<button id="startid" class="startButton">Start</button>
+<button id="stopid" class="stopButton">Stop</button>
+
+<!-- <input type="button" class="button" value="Input Button"> -->
 
 </body>
 </html>

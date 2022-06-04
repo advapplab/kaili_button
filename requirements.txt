@@ -1,0 +1,4 @@
+pymongo
+pandas
+flask
+flask_cors
