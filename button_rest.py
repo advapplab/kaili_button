@@ -35,17 +35,38 @@ def get_altas_mgdb_connection ():
     return client, mgdb_collection
 
 def get_nchc_mgdb_collection():
-    client = MongoClient('mongodb://mongodb:27017/')
+
+    # client = MongoClient("mongodb://{}:{}@{}:{}/".format(NCHC_USERNAME, NCHC_PASSWORD, NCHC_HOST, NCHC_PORT))
+    client = MongoClient("mongodb://08050cc6-73fb-4d20-b60a-484c3241a812:JE0fQbzONJAAwdCxmM9BIabK@203.145.215.67:27017/")
     mgdb_database = client[NCHC_DATABASE]
     mgdb_collection = mgdb_database[NCHC_COLLECTION]
-
+    
     return client, mgdb_collection
 
 
-# TODO count col
-def get_pcs ():
-    n_pcs = 0
-    return n_pcs
+def get_pcs (start_time, end_time, machine):
+
+    start_time_iso = datetime.datetime.utcfromtimestamp(start_time).isoformat()
+    end_time_iso = datetime.datetime.utcfromtimestamp(end_time).isoformat()
+
+    machine = machine[0].upper() + machine[1:]
+    machine = machine[0:7] + " " + machine[7:]
+
+
+    client, mgdb_collection = get_nchc_mgdb_collection ()
+
+    n_pcs = mgdb_collection.find({
+                '$and':
+                    [
+                        {'ts':{'$gte':start_time_iso, 'lt':end_time_iso}},
+                        {'deviceId':machine}
+                    ]
+            }).count()
+
+
+    client.close()
+
+    return 0
 
 @app.route('/start', methods=['POST'])
 @cross_origin()
@@ -82,19 +103,19 @@ def stop():
     start_time = int(starttime[0])
     diff_second = end_time - start_time
 
-    print('diff = ', diff_second, ' seconds')
+    # print('diff = ', diff_second, ' seconds')
 
     # insert to database
     insert_dict = dict()
     insert_dict['machine'] = filename
     insert_dict['start'] = str(start_time)
-    insert_dict['end'] = str(start_time)
+    insert_dict['end'] = str(end_time)
     insert_dict['diff'] = str(diff_second)
-    insert_dict['pcs'] = str(get_pcs())
-    print(insert_dict)
+    insert_dict['pcs'] = str(get_pcs(start_time, end_time, filename))
+    # print(insert_dict)
 
     client, mgdb_collection = get_altas_mgdb_connection ()
-    mgdb_collection.insert(insert_dict)
+    mgdb_collection.insert_one(insert_dict)
     client.close()
 
     # remove status and response to client
