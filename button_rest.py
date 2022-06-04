@@ -1,12 +1,27 @@
 from flask import Flask, request, make_response
 from flask_cors import cross_origin
-import os.path
 
+import os.path
+import datetime
+
+from pymongo import MongoClient
 
 # APP configurations
 app= Flask(__name__)
 
+# Mongodb configurations
+MGDB_HOST = 'mongodb'
+MGDB_PORT = 27017
+MGDB_DATABASE = 'appdb'
 
+
+def get_mgdb_connection ():
+
+    client = MongoClient('mongodb://mongodb:27017/')
+    mgdb_database = client["fr_database"]
+    mgdb_collection = mgdb_database["fr_collection"]
+
+    return client, mgdb_collection
 
 @app.route('/start', methods=['POST'])
 @cross_origin()
@@ -17,7 +32,9 @@ def start():
     filename = post_data['equipment']
 
     f = open(filename, 'a+')  # open file in append mode
-    f.write('python rules')
+
+    
+    f.write(datetime.datetime.now().strftime("%s"))
     f.close()
 
     response_dict = dict()
@@ -33,6 +50,16 @@ def stop():
 
     post_data = request.json
     filename = post_data['equipment']
+
+    with open(filename) as f:
+        starttime = f.readlines()
+
+    end_time = int(datetime.datetime.now().strftime("%s"))
+    start_time = int(starttime[0])
+    diff_second = end_time - start_time
+
+    print('diff = ', diff_second, ' seconds')
+
 
     os.remove(filename)
 
