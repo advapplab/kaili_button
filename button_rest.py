@@ -22,13 +22,13 @@ NCHC_USERNAME = urllib.parse.quote_plus("08050cc6-73fb-4d20-b60a-484c3241a812")
 NCHC_PASSWORD = urllib.parse.quote_plus("JE0fQbzONJAAwdCxmM9BIabK")
 NCHC_HOST = '203.145.215.67'
 NCHC_PORT = '27017'
-NCHC_DATABASE = 'JE0fQbzONJAAwdCxmM9BIabK'
-NCHC_COLLECTION = 'JE0fQbzONJAAwdCxmM9BIabK'
+NCHC_DATABASE = 'b8a71022-306e-49e2-86e3-1a0d30cafc7d'
+NCHC_COLLECTION = 'datahub_HistRawData_444cbfad-250c-4243-a14f-5ea956339702'
 
 
 def get_altas_mgdb_connection ():
 
-    client = MongoClient("mongodb+srv://"+ALTAS_USERNAME+":"+ALTAS_PASSWORD+"@cluster0.geaah.mongodb.net/")
+    client = MongoClient("mongodb+srv://"+ALTAS_USERNAME+":"+ALTAS_PASSWORD+"@"+ALTAS_HOST+"/")
     mgdb_database = client[ALTAS_DATABASE]
     mgdb_collection = mgdb_database[ALTAS_COLLECTION]
 
@@ -36,37 +36,37 @@ def get_altas_mgdb_connection ():
 
 def get_nchc_mgdb_collection():
 
-    # client = MongoClient("mongodb://{}:{}@{}:{}/".format(NCHC_USERNAME, NCHC_PASSWORD, NCHC_HOST, NCHC_PORT))
-    client = MongoClient("mongodb://08050cc6-73fb-4d20-b60a-484c3241a812:JE0fQbzONJAAwdCxmM9BIabK@203.145.215.67:27017/")
+    client = MongoClient(host=[NCHC_HOST + ':' + NCHC_PORT],
+                         username=NCHC_USERNAME,
+                         password=NCHC_PASSWORD,
+                         authSource=NCHC_DATABASE)
+
     mgdb_database = client[NCHC_DATABASE]
     mgdb_collection = mgdb_database[NCHC_COLLECTION]
     
     return client, mgdb_collection
 
-
 def get_pcs (start_time, end_time, machine):
 
+    # combine arg
     start_time_iso = datetime.datetime.utcfromtimestamp(start_time).isoformat()
     end_time_iso = datetime.datetime.utcfromtimestamp(end_time).isoformat()
 
     machine = machine[0].upper() + machine[1:]
     machine = machine[0:7] + " " + machine[7:]
 
-
+    # query count of pcs in database
     client, mgdb_collection = get_nchc_mgdb_collection ()
-
-    n_pcs = mgdb_collection.find({
+    n_pcs = mgdb_collection.count_documents({
                 '$and':
                     [
-                        {'ts':{'$gte':start_time_iso, 'lt':end_time_iso}},
+                        {'ts':{'$gte':start_time_iso, '$lt':end_time_iso}},
                         {'deviceId':machine}
                     ]
-            }).count()
-
-
+            })
     client.close()
 
-    return 0
+    return n_pcs
 
 @app.route('/start', methods=['POST'])
 @cross_origin()
@@ -86,7 +86,6 @@ def start():
     response_data = make_response("response", 200)
 
     return response_data
-
 
 @app.route('/stop', methods=['POST'])
 @cross_origin()
@@ -126,7 +125,6 @@ def stop():
 
     return response_data
 
-
 @app.route('/get_status', methods=['POST'])
 @cross_origin()
 def get_status():
@@ -148,8 +146,5 @@ def get_status():
 
     return response_data
 
-
 if __name__ =='__main__':
-
-
     app.run(host='0.0.0.0', port=5001, debug=True) 
