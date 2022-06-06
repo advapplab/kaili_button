@@ -1,5 +1,5 @@
 from __future__ import nested_scopes
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, render_template
 from flask_cors import cross_origin
 
 import os.path
@@ -82,6 +82,11 @@ def get_pcs (start_time, end_time, machine):
     # print(start_time_iso, end_time_iso, machine, n_pcs)
 
     return n_pcs
+
+
+@app.route("/")
+def index():
+    return render_template("button.html")
 
 @app.route('/start', methods=['POST'])
 @cross_origin()
@@ -176,6 +181,27 @@ def get_status():
         response_dict['results'] = False
         response_dict['product'] = ''
         response_data = make_response(response_dict, 200)
+
+    return response_data
+
+@app.route('/reset', methods=['POST'])
+@cross_origin()
+def reset():
+    # {'equipment':'machine01'}
+
+    post_data = request.json
+    filename = post_data['equipment']
+
+    # remove status and response to client
+    try:
+        os.remove(filename)
+        os.remove(product_status_file)
+    except:
+        print('do nothing')
+
+    response_dict = dict()
+    response_dict['response'] = 200
+    response_data = make_response(response_dict, 200)
 
     return response_data
 

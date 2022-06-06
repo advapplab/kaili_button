@@ -6,7 +6,11 @@
   <script>
 
       $( document ).ready(function() {
-        var requestURL = "http://127.0.0.1:5001/";
+
+        var requestURL = window.location.origin;
+        // console.log(hostname);
+
+        // var requestURL = "http://127.0.0.1:5001/";
         var equ = 'machine01';
 
         var dataJSON = {};
