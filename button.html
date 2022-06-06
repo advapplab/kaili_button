@@ -7,8 +7,10 @@
 
       $( document ).ready(function() {
         var requestURL = "http://127.0.0.1:5001/";
+        var equ = 'machine01';
+
         var dataJSON = {};
-        dataJSON["equipment"] = "machine01";
+        dataJSON["equipment"] = equ;
 
         $.ajax({
             url: requestURL + "get_status",
@@ -18,15 +20,22 @@
             dataType: "json",
             contentType: "application/json;charset=utf-8",
             success: function(returnData){
-              console.log(returnData.results);
-
+              console.log(returnData);
 
               if (returnData.results) {
+                // running
                 $("#stopid").show();
                 $("#startid").hide();
+                $("#sfsid").prop('disabled', true);
+                $("#sfsid").val(returnData.product);
+
+                // console.log(returnData.product)
+
               } else {
+                // waiting
                 $("#startid").show();
                 $("#stopid").hide();
+                $("#sfsid").prop('disabled', false);
               }
             },
             error: function(xhr, ajaxOptions, thrownError){
@@ -37,19 +46,27 @@
         });
 
 
+
         $("#stopid").click(function(){
           $("#startid").show();
           $("#stopid").hide();
 
+          var product_id = $("#sfsid").val();
+          // console.log(product_id);
+
+          var stop_dataJSON = {};
+          stop_dataJSON["equipment"] = equ;
+          stop_dataJSON["product"] = product_id;
+
           $.ajax({
             url: requestURL + "stop",
-            data: JSON.stringify(dataJSON),
+            data: JSON.stringify(stop_dataJSON),
             type: "POST",
             crossDomain: true,
             dataType: "json",
             contentType: "application/json;charset=utf-8",
             success: function(returnData){
-              console.log(returnData.results);
+              console.log(returnData);
             },
             error: function(xhr, ajaxOptions, thrownError){
               console.log('failed');
@@ -59,20 +76,26 @@
           });
         });
 
+        
 
         $("#startid").click(function(){
           $("#stopid").show();
           $("#startid").hide();
+          var product_id = $("#sfsid").val();
+
+          var start_dataJSON = {};
+          start_dataJSON["equipment"] = equ;
+          start_dataJSON["product"] = product_id;
 
           $.ajax({
             url: requestURL + "start",
-            data: JSON.stringify(dataJSON),
+            data: JSON.stringify(start_dataJSON),
             type: "POST",
             crossDomain: true,
             dataType: "json",
             contentType: "application/json;charset=utf-8",
             success: function(returnData){
-              console.log(returnData.results);
+              console.log(returnData);
             },
             error: function(xhr, ajaxOptions, thrownError){
               console.log('failed');
@@ -80,13 +103,11 @@
               console.log(thrownError);
             }
           });
-
         });
-
 
       });
   
-    </script>
+  </script>
 
 <style>
 .startButton {
@@ -130,6 +151,52 @@
 </style>
 </head>
 <body>
+
+
+<select id="sfsid">
+  <option>Products</option>
+  <option value="018-299L">018-299L</option>
+  <option value="018-316">018-316</option>
+  <option value="KW5">KW5</option>
+  <option value="WL-190">WL-190</option>
+  <option value="F10297">F10297</option>
+  <option value="IC CORE">IC CORE</option>
+  <option value="C650">C650</option>
+  <option value="KH5">KH5</option>
+  <option value="TL5">TL5</option>
+  <option value="BA5">BA5</option>
+  <option value="K038-11A">K038-11A</option>
+  <option value="018-196">018-196</option>
+  <option value="018-384">018-384</option>
+  <option value="CM56">CM56</option>
+  <option value="TS6-EZSET">TS6-EZSET</option>
+  <option value="POWER">POWER</option>
+  <option value="MK-108005-CS">MK-108005-CS</option>
+  <option value="LB5">LB5</option>
+  <option value="018-222">018-222</option>
+  <option value="018-284">018-284</option>
+  <option value="018-455">018-455</option>
+  <option value="018-453">018-453</option>
+  <option value="SC6">SC6</option>
+  <option value="SC5">SC5</option>
+  <option value="YT5-TOLEDO">SC5</option>
+  <option value="015-47IL">SC5</option>
+  <option value="LN5-LANE">LN5-LANE</option>
+  <option value="HK5">HK5</option>
+  <option value="HK6">HK6</option>
+  <option value="DE5-DELF">DE5-DELF</option>
+  <option value="CM7">CM7</option>
+  <option value="CM17-301B">CM17-301B</option>
+  <option value="CM">CM</option>
+  <option value="SYSTEM_34">SYSTEM_34</option>
+  <option value="SYSTEM_35">SYSTEM_35</option>
+  <option value="SYSTEM_36">SYSTEM_36</option>
+  <option value="SYSTEM_37">SYSTEM_37</option>
+  <option value="SYSTEM_38">SYSTEM_38</option>
+  <option value="SYSTEM_39">SYSTEM_39</option>
+  <option value="SYSTEM_40">SYSTEM_40</option>
+</select>
+
 
 
 <!-- <a href="#" class="button">Link Button</a> -->

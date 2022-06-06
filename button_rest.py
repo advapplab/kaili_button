@@ -25,6 +25,7 @@ NCHC_PORT = '27017'
 NCHC_DATABASE = 'b8a71022-306e-49e2-86e3-1a0d30cafc7d'
 NCHC_COLLECTION = 'datahub_HistRawData_444cbfad-250c-4243-a14f-5ea956339702'
 
+product_status_file = 'product'
 
 def get_altas_mgdb_connection ():
 
@@ -49,22 +50,36 @@ def get_nchc_mgdb_collection():
 def get_pcs (start_time, end_time, machine):
 
     # combine arg
+    # start_time_iso = (datetime.datetime.utcfromtimestamp(start_time)+datetime.timedelta(hours=8)).isoformat()
+    # end_time_iso = (datetime.datetime.utcfromtimestamp(end_time)+datetime.timedelta(hours=8)).isoformat()
     start_time_iso = datetime.datetime.utcfromtimestamp(start_time).isoformat()
     end_time_iso = datetime.datetime.utcfromtimestamp(end_time).isoformat()
 
     machine = machine[0].upper() + machine[1:]
     machine = machine[0:7] + " " + machine[7:]
 
+    # query_ts = dict()
+    # query_ts['ts'] = {'$gte':datetime.datetime.utcfromtimestamp(start_time), '$lt':datetime.datetime.utcfromtimestamp(end_time)}
+
+    # query_ID = dict()
+    # query_ID['deviceId'] = machine
+
+    # query_dict = dict()
+    # query_dict['$and'] = [query_ts, query_ID]
+    # print(query_dict)
+
     # query count of pcs in database
     client, mgdb_collection = get_nchc_mgdb_collection ()
     n_pcs = mgdb_collection.count_documents({
                 '$and':
                     [
-                        {'ts':{'$gte':start_time_iso, '$lt':end_time_iso}},
+                        {'ts':{'$gte':datetime.datetime.utcfromtimestamp(start_time), '$lt':datetime.datetime.utcfromtimestamp(end_time)}},
                         {'deviceId':machine}
                     ]
             })
     client.close()
+
+    # print(start_time_iso, end_time_iso, machine, n_pcs)
 
     return n_pcs
 
@@ -76,14 +91,19 @@ def start():
     post_data = request.json
     filename = post_data['equipment']
 
+    # machine name
     f = open(filename, 'a+')  # open file in append mode
-
-    
     f.write(datetime.datetime.now().strftime("%s"))
     f.close()
 
+    # product name
+    f = open(product_status_file, 'a+')  # open file in append mode
+    f.write(post_data['product'])
+    f.close()
+
     response_dict = dict()
-    response_data = make_response("response", 200)
+    response_dict['response'] = 200
+    response_data = make_response(response_dict, 200)
 
     return response_data
 
@@ -94,6 +114,7 @@ def stop():
 
     post_data = request.json
     filename = post_data['equipment']
+    product = post_data['product']
 
     with open(filename) as f:
         starttime = f.readlines()
@@ -107,10 +128,11 @@ def stop():
     # insert to database
     insert_dict = dict()
     insert_dict['machine'] = filename
-    insert_dict['start'] = str(start_time)
-    insert_dict['end'] = str(end_time)
-    insert_dict['diff'] = str(diff_second)
+    insert_dict['epoch_start'] = str(start_time)
+    insert_dict['epoch_end'] = str(end_time)
+    insert_dict['epoch_diff'] = str(diff_second)
     insert_dict['pcs'] = str(get_pcs(start_time, end_time, filename))
+    insert_dict['product'] = product
     # print(insert_dict)
 
     client, mgdb_collection = get_altas_mgdb_connection ()
@@ -119,9 +141,11 @@ def stop():
 
     # remove status and response to client
     os.remove(filename)
+    os.remove(product_status_file)
 
     response_dict = dict()
-    response_data = make_response("response", 200)
+    response_dict['response'] = 200
+    response_data = make_response(response_dict, 200)
 
     return response_data
 
@@ -136,12 +160,21 @@ def get_status():
     response_dict = dict()
     file_exists = os.path.exists(filename)  
     if file_exists:
-        # file exist'
+        # file exist', means running
         response_dict['results'] = True
+
+        # load product name
+        with open(product_status_file) as f:
+            product_name = f.readlines()
+
+        print(product_name[0])
+        response_dict['product'] = product_name[0]
         response_data = make_response(response_dict, 200)
+
     else:
         # file not exist'
         response_dict['results'] = False
+        response_dict['product'] = ''
         response_data = make_response(response_dict, 200)
 
     return response_data
