@@ -37,10 +37,12 @@ def get_altas_mgdb_connection ():
 
 def get_nchc_mgdb_collection():
 
-    client = MongoClient(host=[NCHC_HOST + ':' + NCHC_PORT],
-                         username=NCHC_USERNAME,
-                         password=NCHC_PASSWORD,
-                         authSource=NCHC_DATABASE)
+    # client = MongoClient(host=[NCHC_HOST + ':' + NCHC_PORT],
+    #                      username=NCHC_USERNAME,
+    #                      password=NCHC_PASSWORD,
+    #                      authSource=NCHC_DATABASE)
+
+    client = MongoClient("mongodb://08050cc6-73fb-4d20-b60a-484c3241a812:JE0fQbzONJAAwdCxmM9BIabK@203.145.215.67:27017/b8a71022-306e-49e2-86e3-1a0d30cafc7d")
 
     mgdb_database = client[NCHC_DATABASE]
     mgdb_collection = mgdb_database[NCHC_COLLECTION]
