@@ -98,6 +98,13 @@ def start():
     post_data = request.json
     filename = post_data['equipment']
 
+    # delete file if exist
+    if os.path.exists(filename):
+        os.remove(filename)
+    
+    if os.path.exists(product_status_file):
+        os.remove(product_status_file)
+
     # machine name
     f = open(filename, 'a+')  # open file in append mode
     f.write(datetime.datetime.now().strftime("%s"))
