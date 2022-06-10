@@ -10,36 +10,39 @@
         console.log(requestURL);
 
         // var requestURL = "http://127.0.0.1:5001/";
-        var equ = '';
-        
-        $.ajax({
-            url: requestURL + "/get_env",
-            // data: JSON.stringify(dataJSON),
-            type: "GET",
-            crossDomain: true,
-            dataType: "json",
-            contentType: "application/json;charset=utf-8",
-            success: function(returnData){
-              // console.log(returnData);
+        var equ = window.location.href.split('/')[3]
+        // var equ = '';
 
-              if (returnData.results) {
+        // get env variable
+        // $.ajax({
+        //     url: requestURL + "/get_env",
+        //     // data: JSON.stringify(dataJSON),
+        //     type: "GET",
+        //     crossDomain: true,
+        //     dataType: "json",
+        //     contentType: "application/json;charset=utf-8",
+        //     success: function(returnData){
+        //       // console.log(returnData);
 
-                equ = returnData.env
+        //       if (returnData.results) {
 
-                console.log(returnData.env)
+        //         equ = returnData.env
 
-              } 
-            },
-            error: function(xhr, ajaxOptions, thrownError){
-              console.log('failed');
-              console.log(xhr.status);
-              console.log(thrownError);
-            }
-        });
+        //         // console.log(returnData.env)
+
+        //       } 
+        //     },
+        //     error: function(xhr, ajaxOptions, thrownError){
+        //       console.log('failed');
+        //       console.log(xhr.status);
+        //       console.log(thrownError);
+        //     }
+        // });
 
         var dataJSON = {};
         dataJSON["equipment"] = equ;
 
+        // get status
         $.ajax({
             url: requestURL + "/get_status",
             data: JSON.stringify(dataJSON),
@@ -48,7 +51,7 @@
             dataType: "json",
             contentType: "application/json;charset=utf-8",
             success: function(returnData){
-              console.log(returnData);
+              // console.log(returnData);
 
               if (returnData.results) {
                 // running
@@ -74,7 +77,7 @@
         });
 
 
-
+        // stop
         $("#stopid").click(function(){
           $("#startid").show();
           $("#stopid").hide();
@@ -106,7 +109,7 @@
         });
 
         
-
+        // start
         $("#startid").click(function(){
           $("#stopid").show();
           $("#startid").hide();

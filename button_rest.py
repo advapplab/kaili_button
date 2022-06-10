@@ -11,13 +11,13 @@ from pymongo import MongoClient
 # APP configurations
 app= Flask(__name__)
 
-MACHINE = os.getenv('MACHINE')
+# MACHINE = os.getenv('MACHINE')
 
 ALTAS_USERNAME = urllib.parse.quote_plus("kaili")
 ALTAS_PASSWORD = urllib.parse.quote_plus("P@ssw0rd")
 ALTAS_HOST = 'cluster0.geaah.mongodb.net'
 ALTAS_DATABASE = 'pcs'
-ALTAS_COLLECTION = MACHINE
+# ALTAS_COLLECTION = MACHINE
 
 NCHC_USERNAME = urllib.parse.quote_plus("08050cc6-73fb-4d20-b60a-484c3241a812")
 NCHC_PASSWORD = urllib.parse.quote_plus("JE0fQbzONJAAwdCxmM9BIabK")
@@ -26,13 +26,13 @@ NCHC_PORT = '27017'
 NCHC_DATABASE = 'b8a71022-306e-49e2-86e3-1a0d30cafc7d'
 NCHC_COLLECTION = 'datahub_HistRawData_444cbfad-250c-4243-a14f-5ea956339702'
 
-product_status_file = 'product'
+product_status_file = 'status'
 
-def get_altas_mgdb_connection ():
+def get_altas_mgdb_connection (machine_collection):
 
     client = MongoClient("mongodb+srv://"+ALTAS_USERNAME+":"+ALTAS_PASSWORD+"@"+ALTAS_HOST+"/")
     mgdb_database = client[ALTAS_DATABASE]
-    mgdb_collection = mgdb_database[ALTAS_COLLECTION]
+    mgdb_collection = mgdb_database[machine_collection]
 
     return client, mgdb_collection
 
@@ -87,7 +87,12 @@ def get_pcs (start_time, end_time, machine):
     return n_pcs
 
 
-@app.route("/")
+# @app.route("/")
+@app.route("/machine01")
+@app.route("/machine03")
+@app.route("/machine04")
+@app.route("/machine05")
+@app.route("/machine06")
 def index():
     return render_template("button.html")
 
@@ -98,13 +103,14 @@ def start():
 
     post_data = request.json
     filename = post_data['equipment']
+    status_filename = filename + '_' +product_status_file
 
     # delete file if exist
     if os.path.exists(filename):
         os.remove(filename)
     
-    if os.path.exists(product_status_file):
-        os.remove(product_status_file)
+    if os.path.exists(status_filename):
+        os.remove(status_filename)
 
     # machine name
     f = open(filename, 'a+')  # open file in append mode
@@ -112,7 +118,7 @@ def start():
     f.close()
 
     # product name
-    f = open(product_status_file, 'a+')  # open file in append mode
+    f = open(status_filename, 'a+')  # open file in append mode
     f.write(post_data['product'])
     f.close()
 
@@ -130,6 +136,7 @@ def stop():
     post_data = request.json
     filename = post_data['equipment']
     product = post_data['product']
+    status_filename = filename + '_' +product_status_file
 
     with open(filename) as f:
         starttime = f.readlines()
@@ -150,17 +157,18 @@ def stop():
     insert_dict['epoch_start'] = start_time
     insert_dict['epoch_end'] = end_time
     insert_dict['epoch_diff'] = diff_second.total_seconds()
-    insert_dict['pcs'] = str(get_pcs(int(starttime[0]), int(end_time.strftime("%s")), filename))
+    insert_dict['pcs'] = get_pcs(int(starttime[0]), int(end_time.strftime("%s")), filename)
+    insert_dict['rate'] = int(insert_dict['pcs']) / insert_dict['epoch_diff']
     insert_dict['product'] = product
     # print(insert_dict)
 
-    client, mgdb_collection = get_altas_mgdb_connection ()
+    client, mgdb_collection = get_altas_mgdb_connection (filename)
     mgdb_collection.insert_one(insert_dict)
     client.close()
 
     # remove status and response to client
     os.remove(filename)
-    os.remove(product_status_file)
+    os.remove(status_filename)
 
     response_dict = dict()
     response_dict['response'] = 200
@@ -175,6 +183,7 @@ def get_status():
 
     post_data = request.json
     filename = post_data['equipment']
+    status_filename = filename + '_' +product_status_file
 
     response_dict = dict()
     file_exists = os.path.exists(filename)  
@@ -183,7 +192,7 @@ def get_status():
         response_dict['results'] = True
 
         # load product name
-        with open(product_status_file) as f:
+        with open(status_filename) as f:
             product_name = f.readlines()
 
         print(product_name[0])
@@ -198,6 +207,7 @@ def get_status():
 
     return response_data
 
+'''
 @app.route('/reset', methods=['POST'])
 @cross_origin()
 def reset():
@@ -218,7 +228,9 @@ def reset():
     response_data = make_response(response_dict, 200)
 
     return response_data
+'''
 
+'''
 @app.route('/get_env', methods=['GET'])
 @cross_origin()
 def get_env():
@@ -230,6 +242,7 @@ def get_env():
     response_data = make_response(response_dict, 200)
 
     return response_data
+'''
 
 if __name__ =='__main__':
     app.run(host='0.0.0.0', port=5001, debug=True) 
