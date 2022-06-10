@@ -13,6 +13,7 @@
         var equ = window.location.href.split('/')[3]
         // var equ = '';
 
+
         // get env variable
         // $.ajax({
         //     url: requestURL + "/get_env",
@@ -120,6 +121,7 @@
           var start_dataJSON = {};
           start_dataJSON["equipment"] = equ;
           start_dataJSON["product"] = product_id;
+          console.log(start_dataJSON);
 
           $.ajax({
             url: requestURL + "/start",
@@ -187,6 +189,14 @@
 <body>
 
 
+  <p id="p1">Hello World!</p>
+
+  <script>
+    var equ = window.location.href.split('/')[3]
+    document.getElementById("p1").innerHTML = equ;
+  </script>
+
+
 <select id="sfsid">
   <option>Products</option>
   <option value="018-299L">018-299L</option>
@@ -231,13 +241,11 @@
   <option value="SYSTEM_40">SYSTEM_40</option>
 </select>
 
+  <!-- <a href="#" class="button">Link Button</a> -->
+  <button id="startid" class="startButton">Start</button>
+  <button id="stopid" class="stopButton">Stop</button>
 
-
-<!-- <a href="#" class="button">Link Button</a> -->
-<button id="startid" class="startButton">Start</button>
-<button id="stopid" class="stopButton">Stop</button>
-
-<!-- <input type="button" class="button" value="Input Button"> -->
+  <!-- <input type="button" class="button" value="Input Button"> -->
 
 </body>
 </html>
