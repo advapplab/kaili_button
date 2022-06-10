@@ -11,12 +11,13 @@ from pymongo import MongoClient
 # APP configurations
 app= Flask(__name__)
 
+MACHINE = os.getenv('MACHINE')
 
 ALTAS_USERNAME = urllib.parse.quote_plus("kaili")
 ALTAS_PASSWORD = urllib.parse.quote_plus("P@ssw0rd")
 ALTAS_HOST = 'cluster0.geaah.mongodb.net'
 ALTAS_DATABASE = 'pcs'
-ALTAS_COLLECTION = 'test'
+ALTAS_COLLECTION = MACHINE
 
 NCHC_USERNAME = urllib.parse.quote_plus("08050cc6-73fb-4d20-b60a-484c3241a812")
 NCHC_PASSWORD = urllib.parse.quote_plus("JE0fQbzONJAAwdCxmM9BIabK")
@@ -133,8 +134,12 @@ def stop():
     with open(filename) as f:
         starttime = f.readlines()
 
-    end_time = int(datetime.datetime.now().strftime("%s"))
-    start_time = int(starttime[0])
+    # end_time = int(datetime.datetime.now().strftime("%s"))
+    # start_time = int(starttime[0])
+    # diff_second = end_time - start_time
+
+    end_time = datetime.datetime.now()
+    start_time = datetime.datetime.fromtimestamp( int(starttime[0]) )
     diff_second = end_time - start_time
 
     # print('diff = ', diff_second, ' seconds')
@@ -142,10 +147,10 @@ def stop():
     # insert to database
     insert_dict = dict()
     insert_dict['machine'] = filename
-    insert_dict['epoch_start'] = str(start_time)
-    insert_dict['epoch_end'] = str(end_time)
-    insert_dict['epoch_diff'] = str(diff_second)
-    insert_dict['pcs'] = str(get_pcs(start_time, end_time, filename))
+    insert_dict['epoch_start'] = start_time
+    insert_dict['epoch_end'] = end_time
+    insert_dict['epoch_diff'] = diff_second.total_seconds()
+    insert_dict['pcs'] = str(get_pcs(int(starttime[0]), int(end_time.strftime("%s")), filename))
     insert_dict['product'] = product
     # print(insert_dict)
 
@@ -210,6 +215,18 @@ def reset():
 
     response_dict = dict()
     response_dict['response'] = 200
+    response_data = make_response(response_dict, 200)
+
+    return response_data
+
+@app.route('/get_env', methods=['GET'])
+@cross_origin()
+def get_env():
+
+    response_dict = dict()
+    response_dict['response'] = 200
+    response_dict['results'] = True
+    response_dict['env'] = MACHINE
     response_data = make_response(response_dict, 200)
 
     return response_data

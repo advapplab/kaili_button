@@ -10,7 +10,32 @@
         console.log(requestURL);
 
         // var requestURL = "http://127.0.0.1:5001/";
-        var equ = 'machine01';
+        var equ = '';
+        
+        $.ajax({
+            url: requestURL + "/get_env",
+            // data: JSON.stringify(dataJSON),
+            type: "GET",
+            crossDomain: true,
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function(returnData){
+              // console.log(returnData);
+
+              if (returnData.results) {
+
+                equ = returnData.env
+
+                console.log(returnData.env)
+
+              } 
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+              console.log('failed');
+              console.log(xhr.status);
+              console.log(thrownError);
+            }
+        });
 
         var dataJSON = {};
         dataJSON["equipment"] = equ;
