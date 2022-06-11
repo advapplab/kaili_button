@@ -17,7 +17,7 @@ ALTAS_USERNAME = urllib.parse.quote_plus("kaili")
 ALTAS_PASSWORD = urllib.parse.quote_plus("P@ssw0rd")
 ALTAS_HOST = 'cluster0.geaah.mongodb.net'
 ALTAS_DATABASE = 'pcs'
-# ALTAS_COLLECTION = MACHINE
+ALTAS_COLLECTION = 'button'
 
 NCHC_USERNAME = urllib.parse.quote_plus("08050cc6-73fb-4d20-b60a-484c3241a812")
 NCHC_PASSWORD = urllib.parse.quote_plus("JE0fQbzONJAAwdCxmM9BIabK")
@@ -28,11 +28,11 @@ NCHC_COLLECTION = 'datahub_HistRawData_444cbfad-250c-4243-a14f-5ea956339702'
 
 product_status_file = 'status'
 
-def get_altas_mgdb_connection (machine_collection):
+def get_altas_mgdb_connection ():
 
     client = MongoClient("mongodb+srv://"+ALTAS_USERNAME+":"+ALTAS_PASSWORD+"@"+ALTAS_HOST+"/")
     mgdb_database = client[ALTAS_DATABASE]
-    mgdb_collection = mgdb_database[machine_collection]
+    mgdb_collection = mgdb_database[ALTAS_COLLECTION]
 
     return client, mgdb_collection
 
@@ -93,7 +93,7 @@ def get_pcs (start_time, end_time, machine):
 @app.route("/machine04")
 @app.route("/machine05")
 @app.route("/machine06")
-def index():
+def button_html():
     return render_template("button.html")
 
 @app.route('/start', methods=['POST'])
@@ -162,7 +162,7 @@ def stop():
     insert_dict['product'] = product
     # print(insert_dict)
 
-    client, mgdb_collection = get_altas_mgdb_connection (filename)
+    client, mgdb_collection = get_altas_mgdb_connection ()
     mgdb_collection.insert_one(insert_dict)
     client.close()
 
