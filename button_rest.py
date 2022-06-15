@@ -53,10 +53,12 @@ def get_nchc_mgdb_collection():
 def get_pcs (start_time, end_time, machine):
 
     # combine arg
-    # start_time_iso = (datetime.datetime.utcfromtimestamp(start_time)+datetime.timedelta(hours=8)).isoformat()
-    # end_time_iso = (datetime.datetime.utcfromtimestamp(end_time)+datetime.timedelta(hours=8)).isoformat()
+
     start_time_iso = datetime.datetime.utcfromtimestamp(start_time).isoformat()
     end_time_iso = datetime.datetime.utcfromtimestamp(end_time).isoformat()
+
+    if machine == "machine06":
+        machine = "machine02"
 
     machine = machine[0].upper() + machine[1:]
     machine = machine[0:7] + " " + machine[7:]
@@ -159,6 +161,10 @@ def stop():
     insert_dict['epoch_diff'] = diff_second.total_seconds()
     insert_dict['pcs'] = get_pcs(int(starttime[0]), int(end_time.strftime("%s")), filename)
     insert_dict['rate'] = int(insert_dict['pcs']) / insert_dict['epoch_diff']
+    if int(insert_dict['pcs']) > 0:
+        insert_dict['performance'] = insert_dict['epoch_diff'] / int(insert_dict['pcs'])
+    else:
+        insert_dict['performance'] = 0
     insert_dict['product'] = product
     # print(insert_dict)
 
