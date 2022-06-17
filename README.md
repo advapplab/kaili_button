@@ -46,3 +46,28 @@ db.button.find({
     
 })
 ```
+
+### Group by Product and Calculate SUM of PCS
+```js
+db.button.aggregate([ { 
+    $group: { 
+        _id: "$product", 
+        sum: { $sum: "$pcs" }
+    } 
+} ] )
+```
+
+### Group by Product in a specific Datatime, and Calculas SUM of PCS
+```js
+db.button.aggregate([ 
+    { 
+        $match : {"epoch_start":{"$gte": ISODate("2022-06-15T01:00:36+08:00")}}
+    },
+    { 
+        $group: { 
+            _id: "$product", 
+            sum: { $sum: "$pcs" }
+        }
+    } 
+])
+```

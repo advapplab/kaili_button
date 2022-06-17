@@ -59,9 +59,11 @@ def get_pcs (start_time, end_time, machine):
 
     if machine == "machine06":
         machine = "machine02"
+        print(machine)
 
     machine = machine[0].upper() + machine[1:]
     machine = machine[0:7] + " " + machine[7:]
+    print(machine)
 
     # query_ts = dict()
     # query_ts['ts'] = {'$gte':datetime.datetime.utcfromtimestamp(start_time), '$lt':datetime.datetime.utcfromtimestamp(end_time)}
@@ -72,6 +74,14 @@ def get_pcs (start_time, end_time, machine):
     # query_dict = dict()
     # query_dict['$and'] = [query_ts, query_ID]
     # print(query_dict)
+
+    # print(start_time)
+    # start_time = 1655404792
+
+    # query_dict = dict()
+    # query_dict['deviceId']=machine
+    # print(query_dict)
+    # print({'ts':{'$gte':datetime.datetime.utcfromtimestamp(start_time), '$lt':datetime.datetime.utcfromtimestamp(end_time)}})
 
     # query count of pcs in database
     client, mgdb_collection = get_nchc_mgdb_collection ()
@@ -166,6 +176,7 @@ def stop():
     else:
         insert_dict['performance'] = 0
     insert_dict['product'] = product
+    insert_dict['ts'] = end_time
     # print(insert_dict)
 
     client, mgdb_collection = get_altas_mgdb_connection ()
