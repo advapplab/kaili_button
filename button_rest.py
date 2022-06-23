@@ -1,5 +1,5 @@
 from __future__ import nested_scopes
-from flask import Flask, request, make_response, render_template
+from flask import Flask, request, make_response, render_template, jsonify
 from flask_cors import cross_origin
 
 import os.path
@@ -99,6 +99,7 @@ def get_pcs (start_time, end_time, machine):
     return n_pcs
 
 
+
 # @app.route("/")
 @app.route("/machine01")
 @app.route("/machine03")
@@ -107,6 +108,19 @@ def get_pcs (start_time, end_time, machine):
 @app.route("/machine06")
 def button_html():
     return render_template("button.html")
+
+
+@app.route("/", methods=['GET','POST'])
+def grafana_ds_test():
+    """
+    for simple json.
+    official page: should return 200 ok. Used for "Test connection" on the datasource config page.
+    """
+    str_msg = 'test simple json with /'
+
+    return make_response(dict(), 200)
+
+
 
 @app.route('/start', methods=['POST'])
 @cross_origin()
@@ -193,17 +207,29 @@ def stop():
 
     return response_data
 
+@app.route('/search', methods=['POST'])
+@cross_origin()
+def get_product():
+    post_data = request.json
+    print(post_data)
+
+    return ["Product"]
+
 @app.route('/get_status', methods=['POST'])
 @cross_origin()
 def get_status():
     # {'equipment':'machine01'}
 
+    # {"requestId":"Q101","timezone":"","panelId":2,"dashboardId":null,"range":{"from":"2022-06-18T08:00:27.661Z","to":"2022-06-18T14:00:27.661Z","raw":{"from":"now-6h","to":"now"}},"interval":"30s","intervalMs":30000,"targets":[{"refId":"A","type":"timeserie"}],"maxDataPoints":840,"scopedVars":{"__interval":{"text":"30s","value":"30s"},"__interval_ms":{"text":"30000","value":30000}},"startTime":1655560827662,"rangeRaw":{"from":"now-6h","to":"now"}}
+
     post_data = request.json
+
     filename = post_data['equipment']
     status_filename = filename + '_' +product_status_file
 
     response_dict = dict()
     file_exists = os.path.exists(filename)  
+
     if file_exists:
         # file exist', means running
         response_dict['results'] = True

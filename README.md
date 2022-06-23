@@ -71,3 +71,18 @@ db.button.aggregate([
     } 
 ])
 ```
+
+### Group by Machine in a specific Datatime, and Calculas SUM of PCS
+```js
+db.button.aggregate([ 
+    { 
+        $match : {"epoch_start":{"$gte": ISODate("2022-06-20T01:00:36+08:00")}}
+    },
+    { 
+        $group: { 
+            _id: "$machine", 
+            sum: { $sum: "$pcs" }
+        }
+    } 
+])
+```
